@@ -1,0 +1,30 @@
+//
+//  PrefixHeader.pch
+//  ReviewProduct
+//
+//  Created by AmpleSky on 2018/12/5.
+//  Copyright © 2018年 AmpleSky. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+#import "Masonry.h"
+#import "UIColor+PYSearchExtension.h"
+
+///Masonry 约束宏
+#define Mas_Top(superMas,top_float)  make.top.equalTo(superMas).with.offset(top_float)
+#define Mas_left(superMas,Left_float) make.left.equalTo(superMas).with.offset(Left_float)
+#define Mas_bottom(superMas,bottom_UInteger) make.bottom.equalTo(superMas).with.offset(-bottom_UInteger)
+#define Mas_Right(superMas,Right_UInteger) make.right.equalTo(superMas).with.offset(-Right_UInteger)
+
+
+#define kScremHeight [UIScreen mainScreen].bounds.size.height
+#define kScremWidth [UIScreen mainScreen].bounds.size.width
+
+#define ViewWidth  self.view.frame.size.width
+#define ViewHeight  self.view.frame.size.height
+#define SetViewColor(colorString) [UIColor py_colorWithHexString:colorString]
+
+#import "URL_api.h"
+#import "PublicSource.h"
+#endif /* PrefixHeader_pch */
