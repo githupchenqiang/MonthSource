@@ -17,8 +17,25 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-   
+    self.view.backgroundColor = [UIColor whiteColor];
+    [self drawUI];
+    
+    UIBarButtonItem *bar = [[UIBarButtonItem alloc]initWithImage:[UIImage imageNamed:@"收藏"] style:UIBarButtonItemStylePlain target:self action:@selector(Collec:)];
+    UIBarButtonItem *Share = [[UIBarButtonItem alloc]initWithImage:[UIImage imageNamed:@"分享"] style:UIBarButtonItemStylePlain target:self action:@selector(Share:)];
+    
+    self.navigationItem.rightBarButtonItems = @[bar,Share];
 }
+
+- (void)Collec:(UIBarButtonItem *)item{
+    
+    item.image = [UIImage imageNamed:@"收藏Sele"];
+    
+}
+
+- (void)Share:(UIBarButtonItem *)item{
+    [PublicSource shareControlWithUrl:detailmainUrl(_model.ID) ImageUrl:HomeImageURl(_model.imgurl) title:_model.title des:_model.description ViewControl:self];
+}
+
 //绘制webView
 - (void)drawUI{
     
@@ -26,7 +43,7 @@
     _webView.delegate = self;
     _webView .scalesPageToFit = YES;
     
-    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:detailmainUrl(_ID)]];
+    NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:detailmainUrl(_model.ID)]];
     
     [_webView loadRequest:request];
     _webView.backgroundColor = [UIColor whiteColor];
@@ -47,6 +64,12 @@
     });
     
 }
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView{
+    self.hud.hidden = YES;
+}
+
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

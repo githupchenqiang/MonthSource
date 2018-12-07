@@ -22,6 +22,7 @@
     self.window.backgroundColor = [UIColor whiteColor];
     self.window.rootViewController = [RootViewController new];
     application.statusBarStyle = UIStatusBarStyleLightContent;
+    [self configUSharePlatforms];
     [self.window makeKeyAndVisible];
     return YES;
 }

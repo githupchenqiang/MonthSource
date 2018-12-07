@@ -10,79 +10,146 @@
 #import "NetWorking.h"
 #import "HomeModel.h"
 #import "MJExtension.h"
+#import "HomeCollectionViewCell.h"
+#import "ReviewProduct-Swift.h"
+#import "MJRefresh.h"
+#import "DetailViewController.h"
+@interface PageScrolelrViewController ()<UICollectionViewDataSource,cqWaterFlowLayoutDelegate,UICollectionViewDelegate>
+@property (nonatomic,strong)UITableView                          *tableView;
+@property (nonatomic,strong)NSMutableArray                       *mutArray;
+@property (nonatomic,assign)BOOL                                 loadMore;
+@property (nonatomic,assign)int                                     page;
+@property (nonatomic ,strong)UICollectionView                       *collec;
+@property (nonatomic ,strong)cqWaterFlowLayout                      *layout;
 
-@interface PageScrolelrViewController ()<UITableViewDelegate,UITableViewDataSource>
-@property (nonatomic,strong)UITableView     *tableView;
-@property (nonatomic,strong)NSMutableArray  *mutArray;
-@property (nonatomic,assign)BOOL            loadMore;
-@property (nonatomic,assign)NSInteger       page;
-@property (nonatomic ,strong)UITableView                            *table;
 
 @end
 
 @implementation PageScrolelrViewController
+static NSString *Collecell = @"collec";
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor purpleColor];
-    _page = 1;
-    _loadMore = NO;
-    [self.view addSubview:self.table];
-    [self.table mas_makeConstraints:^(MASConstraintMaker *make) {
-        Mas_Top(self.view,0);
-        Mas_left(self.view, 0);
-        Mas_Right(self.view, 0);
-        Mas_bottom(self.view,0);
-    }];
-    [self GetDataFromeServer];
-}
-
--(UITableView *)table{
-    if (!_table) {
-        _table = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, ViewWidth, ViewHeight) style:UITableViewStylePlain];
-        _table.delegate = self;
-        _table.dataSource = self;
-        [_table registerClass:[UITableViewCell class] forCellReuseIdentifier:@"cell"];
-        
-    }
-    return _table;
-}
-
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
-    return 20;
-}
-
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+   
+    [self.view addSubview:self.collec];
+    [_collec.header endRefreshing];
+   self.collec.header = [MJRefreshNormalHeader headerWithRefreshingBlock:^{
+        self.page = 1;
+        self.loadMore = NO;
+        [self GetDataFromeServer];
+   }];
     
-    return 70;
+    self.collec.footer = [MJRefreshAutoNormalFooter footerWithRefreshingBlock:^{
+       self.page++;
+        self.loadMore = YES;
+        [self GetDataFromeServer];
+    }];
+    [_collec.header beginRefreshing];
 }
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
-    cell.textLabel.text = @"9999";
-    return  cell;
+- (UICollectionView *)collec{
+    if (!_collec) {
+        _layout = [[cqWaterFlowLayout alloc]init];
+        _layout.delegate = self;
+        
+        
+        _collec = [[UICollectionView alloc]initWithFrame:CGRectMake(0, 0, ViewWidth, ViewHeight- [PublicSource TabbarHeight]-35) collectionViewLayout:_layout];
+        [_collec registerNib:[UINib nibWithNibName:@"HomeCollectionViewCell" bundle:nil] forCellWithReuseIdentifier:Collecell];
+        _collec.dataSource = self;
+        _collec.delegate = self;
+        _collec.backgroundColor = [UIColor py_colorWithHexString:@"C9C9C9"];
+    }
+    return _collec;
+}
+
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
+    return self.mutArray.count;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    HomeCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:Collecell forIndexPath:indexPath];
+    cell.backgroundColor = [UIColor whiteColor];
+    HomeModel *model = [self.mutArray objectAtIndex:indexPath.row];
+    [cell.Image sd_setImageWithURL:[NSURL URLWithString:HomeImageURl(model.imgurl)] placeholderImage:[UIImage imageNamed:@""]];
+    cell.Titlte.text = model.title;
+    cell.DesLabel.text = model.Fooddescription;
+    return cell;
+}
+
+- (CGFloat)columnCountInWaterflowLayoutWithWaterflowLayout:(cqWaterFlowLayout *)waterflowLayout{
+    return 2;
+}
+
+- (CGFloat)waterflowLayoutWithWaterflowLayout:(cqWaterFlowLayout *)waterflowLayout heightForItemIndex:(NSInteger)heightForItemIndex itemWidth:(CGFloat)itemWidth{
+    
+    
+    if (heightForItemIndex%2 == 0) {
+       return 250;
+    }else{
+        return 200;
+    }
+    
+    
+}
+
+
+
+- (CGFloat)columnMarginInWaterflowLayoutWithWaterflowLayout:(cqWaterFlowLayout *)waterflowLayout{
+    return 5;
+}
+
+- (CGFloat)rowMarginInWaterflowLayoutWithWaterflowLayout:(cqWaterFlowLayout *)waterflowLayout{
+    return 5;
+}
+
+- (UIEdgeInsets)edgeInsetsInWaterflowLayoutWithWaterflowLayout:(cqWaterFlowLayout *)waterflowLayout{
+    return UIEdgeInsetsMake(0, 5, 10, 5);
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
+    DetailViewController *detail = [[DetailViewController alloc]init];
+    HomeModel *model = [self.mutArray objectAtIndex:indexPath.row];
+    detail.model = model;
+    [self.navigationController pushViewController:detail animated:YES];
 }
 
 - (void)GetDataFromeServer{
-    [NetWorking getDataFromServerWithUrlString:mainUrl([PublicSource DeviceUUID], 1, 1) parame:nil success:^(NSDictionary *RequestResponse) {
+   
+    [NetWorking getDataFromServerWithUrlString:mainUrl([PublicSource DeviceUUID],_Month, self.page) parame:nil success:^(NSDictionary *RequestResponse) {
         NSLog(@"%@",RequestResponse);
-        
         NSArray *dataArray = RequestResponse[@"data"][@"recipes"];
-        
         NSArray *array = [HomeModel mj_objectArrayWithKeyValuesArray:dataArray];
+       
         
-        HomeModel *model = array[2];
+        NSMutableArray *mutarray = [array mutableCopy];
         
-        HomeImageURl(model.imgurl);
+        [self.collec.header endRefreshing];
+        [self.collec.footer endRefreshing];
+        //遍历记录广告数据的下标
+        for (int i = 0; i < array.count; i++) {
+            if ((i+1)%4 == 0) {
+                HomeModel *model = array[i];
+                [mutarray removeObject:model];
+            }
+        }
         
-        NSLog(@"%@", HomeImageURl(model.imgurl));
-        
-        NSLog(@"%ld",array.count);
-        
+        if (self.loadMore) {
+            for (HomeModel *model in mutarray) {
+                [self.mutArray addObject:model];
+            }
+        }else{
+            self.mutArray = [mutarray mutableCopy];
+        }
+        [self.collec reloadData];
     } faile:^(NSError *error) {
-        
+       [self.collec.header endRefreshing];
     }];
 }
+
 
 
 

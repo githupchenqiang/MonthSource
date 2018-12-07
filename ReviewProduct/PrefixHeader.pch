@@ -10,6 +10,9 @@
 #define PrefixHeader_pch
 #import "Masonry.h"
 #import "UIColor+PYSearchExtension.h"
+#import "UIImageView+WebCache.h"
+
+#import "ReviewProduct-Swift.h"
 
 ///Masonry 约束宏
 #define Mas_Top(superMas,top_float)  make.top.equalTo(superMas).with.offset(top_float)
